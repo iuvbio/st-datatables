@@ -23,7 +23,7 @@ if not _RELEASE:
         # We give the component a simple, descriptive name ("my_component"
         # does not fit this bill, so please choose something better for your
         # own component :)
-        "datatables_component",
+        "st_datatables",
         # Pass `url` here to tell Streamlit that the component will be served
         # by the local dev server that you run via `npm run start`.
         # (This is useful while your component is in development.)
@@ -35,9 +35,7 @@ else:
     # build directory:
     parent_dir = os.path.dirname(os.path.abspath(__file__))
     build_dir = os.path.join(parent_dir, "frontend/build")
-    _component_func = components.declare_component(
-        "datatables_component", path=build_dir
-    )
+    _component_func = components.declare_component("st_datatables", path=build_dir)
 
 
 # Create a wrapper function for the component. This is an optional
@@ -45,8 +43,8 @@ else:
 # `declare_component` and call it done. The wrapper allows us to customize
 # our component's API: we can pre-process its input args, post-process its
 # output value, and add a docstring for users.
-def datatables_component(df, key=None):
-    """Create a new instance of "datatables_component".
+def st_datatable(df, key=None):
+    """Create a new instance of "st_datatables".
 
     Parameters
     ----------
@@ -78,37 +76,6 @@ def datatables_component(df, key=None):
         tabledata=tabledata, columns=columns, key=key, default=None
     )
 
-    # components.html(
-    #    """
-    #    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
-    #    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    #    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
-    #    <script>
-    #      $(document).ready(function() {{
-    #          $('#datatables-table').DataTable({{
-    #            data: {},
-    #            columns: {}
-    #          }});
-    #      }} );
-    #    </script>
-    #      <body>
-    #        <noscript>You need to enable JavaScript to run this app.</noscript>
-    #        <table id="datatables-table">
-    #          <thead>
-    #            <tr>
-    #              <th>a</th>
-    #              <th>b</th>
-    #              <th>c</th>
-    #              <th>d</th>
-    #            </tr>
-    #          </thead>
-    #        </table>
-    #      </body>
-    #    """.format(
-    #        tabledata, columns
-    #    ),
-    #    height=600,
-    # )
     # We could modify the value returned from the component if we wanted.
     # There's no need to do this in our simple example - but it's an option.
     return component_value
@@ -116,7 +83,7 @@ def datatables_component(df, key=None):
 
 # Add some test code to play with the component while it's in development.
 # During development, we can run this just as we would any other Streamlit
-# app: `$ streamlit run datatables_component/__init__.py`
+# app: `$ streamlit run st_datatables/__init__.py`
 if not _RELEASE:
     from string import ascii_letters
 
@@ -144,4 +111,4 @@ if not _RELEASE:
     # and lose its current state. In this case, we want to vary the component's
     # "name" argument without having it get recreated.
     # st.markdown(df.to_html(table_id=table_id), unsafe_allow_html=True)
-    _ = datatables_component(df, key="foo")
+    _ = st_datatable(df, key="foo")
