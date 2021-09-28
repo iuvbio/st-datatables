@@ -6,7 +6,9 @@ var $       = require( 'jquery' );
 //var dt      = require( 'datatables.net' )();
 //var buttons = require( 'datatables.net-buttons' )();
 
-const span = document.body.appendChild(document.createElement("span"))
+const span = document.createElement("span")
+span.setAttribute("class", "streamlit-base")
+const spanNode = document.body.appendChild(span)
 const table = document.createElement("table")
 
 function makeid(length: number): string {
@@ -19,6 +21,59 @@ function makeid(length: number): string {
   return `datatable-${result}`;
 }
 
+type StreamlitTheme = {
+  primaryColor: string;
+  backgroundColor: string;
+  secondaryBackgroundColor: string;
+  textColor: string;
+  font: string 
+};
+
+function addStyle(theme: StreamlitTheme): void {
+    const fontFamily = theme["font"]
+    const primaryColor = theme["primaryColor"]
+    var styles = `
+      .streamlit-base {
+        font-family: ${fontFamily}
+      }
+      .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        color: white !important;
+        border: 1px solid ${primaryColor};
+        background-color: ${primaryColor};
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #fcbccd), color-stop(100%, ${primaryColor}));
+        /* Chrome,Safari4+ */
+        background: -webkit-linear-gradient(top, #fcbccd 0%, ${primaryColor} 100%);
+        /* Chrome10+,Safari5.1+ */
+        background: -moz-linear-gradient(top, #fcbccd 0%, ${primaryColor} 100%);
+        /* FF3.6+ */
+        background: -ms-linear-gradient(top, #fcbccd 0%, ${primaryColor} 100%);
+        /* IE10+ */
+        background: -o-linear-gradient(top, #fcbccd 0%, ${primaryColor} 100%);
+        /* Opera 11.10+ */
+        background: linear-gradient(to bottom, #fcbccd 0%, ${primaryColor} 100%);
+        /* W3C */
+      }
+    `
+    var styleSheet = document.createElement("style")
+    styleSheet.type = "text/css"
+    styleSheet.innerText = styles
+    document.head.appendChild(styleSheet)
+}
+
+function makeTable(table_id: string, columns: object[]): void {
+  table.setAttribute("id", table_id)
+  table.setAttribute("class", "display streamlit-datatable")
+
+  const thead = table.appendChild(document.createElement("thead"))
+  const trow = thead.appendChild(document.createElement("tr"))
+  for (let c of Object.keys(columns)) {
+    const th = trow.appendChild(document.createElement("th"))
+    th.textContent = c
+  }
+  spanNode.appendChild(table)
+  spanNode.appendChild(document.createElement("br"))
+}
+
 /**
  * The component's render function. This will be called immediately after
  * the component is initially loaded, and then again every time the
@@ -28,24 +83,17 @@ function onRender(event: Event): void {
   // Get the RenderData from the event
   const data = (event as CustomEvent<RenderData>).detail
 
+  if (data.theme) {
+    addStyle(data.theme)
+  }
+
   // RenderData.args is the JSON dictionary of arguments sent from the
   // Python script.
   let tabledata = data.args["tabledata"]
   let columns = data.args["columns"]
-  console.log(tabledata)
-  console.log(columns)
 
   const table_id = makeid(10)
-  table.setAttribute("id", table_id)
-  table.setAttribute("class", "display")
-  const thead = table.appendChild(document.createElement("thead"))
-  const trow = thead.appendChild(document.createElement("tr"))
-  for (let c of Object.keys(columns)) {
-    const th = trow.appendChild(document.createElement("th"))
-    th.textContent = c
-  }
-  span.appendChild(table)
-  span.appendChild(document.createElement("br"))
+  makeTable(table_id, columns)
 
   $(`#${table_id}`).DataTable({
     data: tabledata,
