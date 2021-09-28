@@ -23,7 +23,7 @@ if not _RELEASE:
         # We give the component a simple, descriptive name ("my_component"
         # does not fit this bill, so please choose something better for your
         # own component :)
-        "my_component",
+        "datatables_component",
         # Pass `url` here to tell Streamlit that the component will be served
         # by the local dev server that you run via `npm run start`.
         # (This is useful while your component is in development.)
@@ -35,7 +35,9 @@ else:
     # build directory:
     parent_dir = os.path.dirname(os.path.abspath(__file__))
     build_dir = os.path.join(parent_dir, "frontend/build")
-    _component_func = components.declare_component("my_component", path=build_dir)
+    _component_func = components.declare_component(
+        "datatables_component", path=build_dir
+    )
 
 
 # Create a wrapper function for the component. This is an optional
@@ -43,8 +45,8 @@ else:
 # `declare_component` and call it done. The wrapper allows us to customize
 # our component's API: we can pre-process its input args, post-process its
 # output value, and add a docstring for users.
-def my_component(name, key=None):
-    """Create a new instance of "my_component".
+def datatables_component(df, key=None):
+    """Create a new instance of "datatables_component".
 
     Parameters
     ----------
@@ -70,8 +72,43 @@ def my_component(name, key=None):
     #
     # "default" is a special argument that specifies the initial return
     # value of the component before the user has interacted with it.
-    component_value = _component_func(name=name, key=key, default=0)
+    tabledata = df.to_dict(orient="records")
+    columns = [{"data": key} for key in df.columns.tolist()]
+    component_value = _component_func(
+        tabledata=tabledata, columns=columns, key=key, default=None
+    )
 
+    # components.html(
+    #    """
+    #    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
+    #    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    #    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
+    #    <script>
+    #      $(document).ready(function() {{
+    #          $('#datatables-table').DataTable({{
+    #            data: {},
+    #            columns: {}
+    #          }});
+    #      }} );
+    #    </script>
+    #      <body>
+    #        <noscript>You need to enable JavaScript to run this app.</noscript>
+    #        <table id="datatables-table">
+    #          <thead>
+    #            <tr>
+    #              <th>a</th>
+    #              <th>b</th>
+    #              <th>c</th>
+    #              <th>d</th>
+    #            </tr>
+    #          </thead>
+    #        </table>
+    #      </body>
+    #    """.format(
+    #        tabledata, columns
+    #    ),
+    #    height=600,
+    # )
     # We could modify the value returned from the component if we wanted.
     # There's no need to do this in our simple example - but it's an option.
     return component_value
@@ -79,19 +116,24 @@ def my_component(name, key=None):
 
 # Add some test code to play with the component while it's in development.
 # During development, we can run this just as we would any other Streamlit
-# app: `$ streamlit run my_component/__init__.py`
+# app: `$ streamlit run datatables_component/__init__.py`
 if not _RELEASE:
+    from string import ascii_letters
+
+    import numpy as np
+    import pandas as pd
     import streamlit as st
 
+    df = pd.DataFrame(
+        {
+            "a": np.random.choice(list(ascii_letters), size=20),
+            "b": np.random.randint(0, 10, 20),
+            "c": np.random.randint(0, 100, 20),
+            "d": np.random.randint(-200, 200, 20),
+        }
+    )
+
     st.subheader("Component with constant args")
-
-    # Create an instance of our component with a constant `name` arg, and
-    # print its output value.
-    num_clicks = my_component("World")
-    st.markdown("You've clicked %s times!" % int(num_clicks))
-
-    st.markdown("---")
-    st.subheader("Component with variable args")
 
     # Create a second instance of our component whose `name` arg will vary
     # based on a text_input widget.
@@ -101,6 +143,5 @@ if not _RELEASE:
     # it is considered a new instance and will be re-mounted on the frontend
     # and lose its current state. In this case, we want to vary the component's
     # "name" argument without having it get recreated.
-    name_input = st.text_input("Enter a name", value="Streamlit")
-    num_clicks = my_component(name_input, key="foo")
-    st.markdown("You've clicked %s times!" % int(num_clicks))
+    # st.markdown(df.to_html(table_id=table_id), unsafe_allow_html=True)
+    _ = datatables_component(df, key="foo")
