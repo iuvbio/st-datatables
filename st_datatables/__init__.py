@@ -5,7 +5,7 @@ import streamlit.components.v1 as components
 # the component, and True when we're ready to package and distribute it.
 # (This is, of course, optional - there are innumerable ways to manage your
 # release process.)
-_RELEASE = False
+_RELEASE = True
 
 # Declare a Streamlit component. `declare_component` returns a function
 # that is used to create instances of the component. We're naming this
@@ -48,9 +48,8 @@ def st_datatable(df, key=None):
 
     Parameters
     ----------
-    name: str
-        The name of the thing we're saying hello to. The component will display
-        the text "Hello, {name}!"
+    df: pandas.DataFrame
+        The dataframe you want to render.
     key: str or None
         An optional key that uniquely identifies this component. If this is
         None, and the component's arguments are changed, the component will
@@ -58,11 +57,7 @@ def st_datatable(df, key=None):
 
     Returns
     -------
-    int
-        The number of times the component's "Click Me" button has been clicked.
-        (This is the value passed to `Streamlit.setComponentValue` on the
-        frontend.)
-
+    None
     """
     # Call through to our private component function. Arguments we pass here
     # will be sent to the frontend, where they'll be available in an "args"
@@ -81,9 +76,6 @@ def st_datatable(df, key=None):
     return component_value
 
 
-# Add some test code to play with the component while it's in development.
-# During development, we can run this just as we would any other Streamlit
-# app: `$ streamlit run st_datatables/__init__.py`
 if not _RELEASE:
     from string import ascii_letters
 
@@ -102,9 +94,6 @@ if not _RELEASE:
 
     st.subheader("Component with constant args")
 
-    # Create a second instance of our component whose `name` arg will vary
-    # based on a text_input widget.
-    #
     # We use the special "key" argument to assign a fixed identity to this
     # component instance. By default, when a component's arguments change,
     # it is considered a new instance and will be re-mounted on the frontend
